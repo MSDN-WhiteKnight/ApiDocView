@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Text;
+using HttpMultipartParser;
 
 namespace HtmlUiTest
 {
@@ -15,37 +17,71 @@ namespace HtmlUiTest
         
         public string ProcessRequest(HttpListenerRequest request)
         {
-            //разбираем параметры запроса
-            string command = request.QueryString["command"];
-            string argument = request.QueryString["argument"];
-            
-            //обработать команду
-            
-            if (argument == null) argument = "";
+            Dictionary<string, object> fields = new Dictionary<string, object>();
 
-            switch (command)
+            if (Utils.StrEquals(request.HttpMethod, "GET"))
             {
-                case "exec":
-                    var method = this.GetType().GetMethod(argument);
-                    method.Invoke(this, new object[] { });
-                    return this.Html;
-                
-                default:
-                    Dictionary<string, object> fields = new Dictionary<string, object>();
+                //разбираем параметры запроса
+                string command = request.QueryString["command"];
+                string argument = request.QueryString["argument"];
 
-                    foreach (var x in request.QueryString.Keys)
-                    {
-                        string name = x.ToString();
-                        string val = request.QueryString[name];
-                        fields[name] = val;
-                    }
+                //обработать команду
 
-                    LoadEventArgs args = new LoadEventArgs(fields);
-                    this.OnLoad(args);
+                if (argument == null) argument = "";
 
-                    if (args.SendCustomResponse) return args.CustomResponse;
-                    else return this.Html;
+                switch (command)
+                {
+                    case "exec":
+                        var method = this.GetType().GetMethod(argument);
+                        method.Invoke(this, new object[] { });
+                        return this.Html;
+
+                    default:                        
+                        foreach (object x in request.QueryString.Keys)
+                        {
+                            string name = x.ToString();
+                            string val = request.QueryString[name];
+                            fields[name] = val;
+                        }
+
+                        break;
+                }
             }
+            else if(Utils.StrEquals(request.HttpMethod,"POST") && request.ContentType.StartsWith("multipart/form-data"))
+            {
+                MultipartFormDataParser parser = MultipartFormDataParser.Parse(request.InputStream);
+                
+                for (int i = 0; i < parser.Parameters.Count; i++)
+                {
+                    ParameterPart x = parser.Parameters[i];
+                    string name = x.Name;
+                    fields[name] = x.Data;
+                }
+
+                for (int i = 0; i < parser.Files.Count; i++)
+                {
+                    FilePart x = parser.Files[i];
+                    string name = x.Name;
+                    MemoryStream msData = new MemoryStream();
+                    x.Data.CopyTo(msData);
+
+                    if (Utils.StrEquals(x.ContentType,"text/plain") || Utils.StrEquals(x.ContentType, "text/html"))
+                    {
+                        fields[name] = Encoding.UTF8.GetString(msData.ToArray());
+                    }
+                    else 
+                    { 
+                        fields[name] = msData.ToArray(); 
+                    }
+                }
+            }
+            else return this.Html;
+
+            LoadEventArgs args = new LoadEventArgs(fields);
+            this.OnLoad(args);
+
+            if (args.SendCustomResponse) return args.CustomResponse;
+            else return this.Html;
         }
     }
 

@@ -26,6 +26,13 @@ namespace HtmlUiTest
             int x = Convert.ToInt32(args.Fields["x"]);
             int y = Convert.ToInt32(args.Fields["y"]);
             string txt = x.ToString() + "+" + y.ToString() + "=" + (x + y).ToString();
+
+            if (args.Fields.ContainsKey("file"))
+            {
+                string sfile = args.Fields["file"].ToString();
+                txt += " " + sfile;
+            }
+
             Console.WriteLine(txt);
             args.SendCustomResponse = true;
             args.CustomResponse = txt;

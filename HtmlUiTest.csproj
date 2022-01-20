@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="HttpMultipartParser" Version="5.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="frontend.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
