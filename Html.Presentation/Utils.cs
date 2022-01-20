@@ -1,8 +1,11 @@
-﻿using System;
+﻿/* Html.Presentation
+ * Copyright (c) 2022,  MSDN.WhiteKnight (https://github.com/MSDN-WhiteKnight) 
+ * License: MIT */
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HtmlUiTest
+namespace Html.Presentation
 {
     internal class Utils
     {

@@ -1,11 +1,14 @@
-﻿using System;
+﻿/* Html.Presentation
+ * Copyright (c) 2022,  MSDN.WhiteKnight (https://github.com/MSDN-WhiteKnight) 
+ * License: MIT */
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
 using HttpMultipartParser;
 
-namespace HtmlUiTest
+namespace Html.Presentation
 {
     public abstract class Page
     {

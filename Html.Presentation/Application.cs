@@ -1,11 +1,14 @@
-﻿using System;
+﻿/* Html.Presentation
+ * Copyright (c) 2022,  MSDN.WhiteKnight (https://github.com/MSDN-WhiteKnight) 
+ * License: MIT */
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Threading;
 
-namespace HtmlUiTest
+namespace Html.Presentation
 {
     public class Application
     {
