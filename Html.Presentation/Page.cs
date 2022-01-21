@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using HttpMultipartParser;
 
@@ -17,7 +18,32 @@ namespace Html.Presentation
         public Application Owner { get; set; }
 
         public abstract void OnLoad(LoadEventArgs args);
-        
+
+        public static string ReadFromFile(string path)
+        {
+            return File.ReadAllText(path);
+        }
+
+        static string ReadFromResourceImpl(Assembly assembly, string nspace, string name)
+        {
+            using (Stream stream = assembly.GetManifestResourceStream(nspace + "." + name))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                return reader.ReadToEnd();
+            }
+        }
+
+        public string ReadFromResource(string name)
+        {
+            Type t = this.GetType();
+
+            using (Stream stream = t.Assembly.GetManifestResourceStream(t.Namespace + "." + name))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                return reader.ReadToEnd();
+            }
+        }
+
         public string ProcessRequest(HttpListenerRequest request)
         {
             Dictionary<string, object> fields = new Dictionary<string, object>();
@@ -96,8 +122,19 @@ namespace Html.Presentation
         {
             this._fields = fields;
         }
+                
+        public object GetField(string name)
+        {
+            object ret;
 
-        public Dictionary<string, object> Fields { get { return this._fields; } }
+            if (this._fields.TryGetValue(name, out ret)) return ret;
+            else return null;
+        }
+
+        public bool HasField(string name)
+        {
+            return this._fields.ContainsKey(name);
+        }
 
         public bool SendCustomResponse { get; set; }
 
