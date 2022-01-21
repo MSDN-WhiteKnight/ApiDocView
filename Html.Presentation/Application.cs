@@ -45,7 +45,7 @@ function request(url){
 }
 
 function dotnet_execute(method) {
-    request(location.href+'?command=exec&argument='+method);
+    request(location.href+'?dotnet-command=exec&dotnet-argument='+method);
 }";
         }
 

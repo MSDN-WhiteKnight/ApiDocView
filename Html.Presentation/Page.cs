@@ -51,8 +51,8 @@ namespace Html.Presentation
             if (Utils.StrEquals(request.HttpMethod, "GET"))
             {
                 //разбираем параметры запроса
-                string command = request.QueryString["command"];
-                string argument = request.QueryString["argument"];
+                string command = request.QueryString["dotnet-command"];
+                string argument = request.QueryString["dotnet-argument"];
 
                 //обработать команду
 
