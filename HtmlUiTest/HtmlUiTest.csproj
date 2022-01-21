@@ -6,11 +6,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="hello.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="hello.html" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Html.Presentation\Html.Presentation.csproj" />    
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="frontend.html">
+    <None Update="index.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
