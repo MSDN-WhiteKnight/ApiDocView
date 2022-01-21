@@ -10,7 +10,35 @@ namespace HtmlUiTest
         public IndexPage()
         {
             this.Name = "index.html";
-            this.Html = File.ReadAllText("frontend.html");
+            this.Html = ReadFromFile(this.Name);
+        }
+
+        public override void OnLoad(LoadEventArgs args)
+        {
+            if (!args.HasField("x") || !args.HasField("y")) return;
+
+            int x = Convert.ToInt32(args.GetField("x"));
+            int y = Convert.ToInt32(args.GetField("y"));
+            string txt = x.ToString() + "+" + y.ToString() + "=" + (x + y).ToString();
+
+            if (args.HasField("file"))
+            {
+                string sfile = args.GetField("file").ToString();
+                txt += " " + sfile;
+            }
+
+            Console.WriteLine(txt);
+            args.SendCustomResponse = true;
+            args.CustomResponse = txt;
+        }
+    }
+
+    class HelloPage : Page
+    {
+        public HelloPage()
+        {
+            this.Name = "hello.html";
+            this.Html = ReadFromResource(this.Name);
         }
 
         public void OnHelloClick()
@@ -20,24 +48,10 @@ namespace HtmlUiTest
 
         public override void OnLoad(LoadEventArgs args)
         {
-            if (!args.Fields.ContainsKey("x") || !args.Fields.ContainsKey("y")) return;
-
-            int x = Convert.ToInt32(args.Fields["x"]);
-            int y = Convert.ToInt32(args.Fields["y"]);
-            string txt = x.ToString() + "+" + y.ToString() + "=" + (x + y).ToString();
-
-            if (args.Fields.ContainsKey("file"))
-            {
-                string sfile = args.Fields["file"].ToString();
-                txt += " " + sfile;
-            }
-
-            Console.WriteLine(txt);
-            args.SendCustomResponse = true;
-            args.CustomResponse = txt;
+            
         }
     }
-    
+
     class Program
     {        
         public static void Print(string text)
@@ -57,7 +71,8 @@ namespace HtmlUiTest
             app.UrlHost = "http://localhost:8080";
             app.UrlPrefix = "/myapp/";
             app.HomepageUrl = "http://localhost:8080/myapp/index.html";
-            app.AddPage(new IndexPage());            
+            app.AddPage(new IndexPage());
+            app.AddPage(new HelloPage());
             app.RunInBackground();
 
             Console.ReadKey();
