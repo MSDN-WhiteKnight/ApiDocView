@@ -7,10 +7,16 @@ using System.Text;
 
 namespace Html.Presentation
 {
-    public class ContentData
+    public sealed class ContentData
     {
         public byte[] Content { get; set; }
         public string ContentType { get; set; }
+        public string FileName { get; set; }
+
+        public ContentData()
+        {
+            this.FileName = string.Empty;
+        }
 
         public static ContentData FromText(string str)
         {

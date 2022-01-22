@@ -94,17 +94,11 @@ namespace Html.Presentation
                     MemoryStream msData = new MemoryStream();
                     x.Data.CopyTo(msData);
 
-                    if (ContentTypes.IsTextContentType(x.ContentType))
-                    {
-                        ContentData data = new ContentData();
-                        data.Content = msData.ToArray();
-                        data.ContentType = x.ContentType;
-                        fields[name] = data;
-                    }
-                    else 
-                    { 
-                        fields[name] = msData.ToArray(); 
-                    }
+                    ContentData data = new ContentData();
+                    data.Content = msData.ToArray();
+                    data.ContentType = x.ContentType;
+                    data.FileName = x.FileName;
+                    fields[name] = data;
                 }
             }
             else return ContentData.FromHTML(this.Html);
