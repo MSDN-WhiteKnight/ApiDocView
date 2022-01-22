@@ -20,16 +20,10 @@ namespace HtmlUiTest
             int x = Convert.ToInt32(args.GetField("x"));
             int y = Convert.ToInt32(args.GetField("y"));
             string txt = x.ToString() + "+" + y.ToString() + "=" + (x + y).ToString();
-
-            if (args.HasField("file"))
-            {
-                string sfile = args.GetField("file").ToString();
-                txt += " " + sfile;
-            }
-
+            
             Console.WriteLine(txt);
             args.SendCustomResponse = true;
-            args.CustomResponse = txt;
+            args.CustomResponse = ContentData.FromText(txt);
         }
     }
 
@@ -49,6 +43,46 @@ namespace HtmlUiTest
         public override void OnLoad(LoadEventArgs args)
         {
             
+        }
+    }
+
+    class ViewPage : Page
+    {
+        public ViewPage()
+        {
+            this.Name = "view.html";
+            this.Html = ReadFromResource(this.Name);
+        }
+
+        public override void OnLoad(LoadEventArgs args)
+        {
+            if (!args.HasField("file")) return;
+
+            object file = args.GetField("file");
+
+            if (file is ContentData)
+            {
+                ContentData data = (ContentData)file;
+
+                if (data.IsText)
+                {
+                    args.SendCustomResponse = true;
+                    args.CustomResponse = data;
+                    return;
+                }
+            }
+            else if (file is byte[])
+            {
+                byte[] arr = (byte[])file;
+                args.SendCustomResponse = true;
+                args.CustomResponse = ContentData.FromText("Binary file (" + arr.Length + " bytes)");
+                return;
+            }
+            
+            string sfile = args.GetField("file").ToString();
+            Console.WriteLine(sfile);
+            args.SendCustomResponse = true;
+            args.CustomResponse = ContentData.FromText(sfile);
         }
     }
 
@@ -73,6 +107,7 @@ namespace HtmlUiTest
             app.HomepageUrl = "http://localhost:8080/myapp/index.html";
             app.AddPage(new IndexPage());
             app.AddPage(new HelloPage());
+            app.AddPage(new ViewPage());
             app.RunInBackground();
 
             Console.ReadKey();

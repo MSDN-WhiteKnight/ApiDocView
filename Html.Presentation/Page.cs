@@ -44,7 +44,7 @@ namespace Html.Presentation
             }
         }
 
-        public string ProcessRequest(HttpListenerRequest request)
+        internal ContentData ProcessRequest(HttpListenerRequest request)
         {
             Dictionary<string, object> fields = new Dictionary<string, object>();
 
@@ -63,7 +63,7 @@ namespace Html.Presentation
                     case "exec":
                         var method = this.GetType().GetMethod(argument);
                         method.Invoke(this, new object[] { });
-                        return this.Html;
+                        return ContentData.FromHTML(this.Html);
 
                     default:                        
                         foreach (object x in request.QueryString.Keys)
@@ -94,9 +94,12 @@ namespace Html.Presentation
                     MemoryStream msData = new MemoryStream();
                     x.Data.CopyTo(msData);
 
-                    if (Utils.StrEquals(x.ContentType,"text/plain") || Utils.StrEquals(x.ContentType, "text/html"))
+                    if (ContentTypes.IsTextContentType(x.ContentType))
                     {
-                        fields[name] = Encoding.UTF8.GetString(msData.ToArray());
+                        ContentData data = new ContentData();
+                        data.Content = msData.ToArray();
+                        data.ContentType = x.ContentType;
+                        fields[name] = data;
                     }
                     else 
                     { 
@@ -104,13 +107,13 @@ namespace Html.Presentation
                     }
                 }
             }
-            else return this.Html;
+            else return ContentData.FromHTML(this.Html);
 
             LoadEventArgs args = new LoadEventArgs(fields);
             this.OnLoad(args);
 
             if (args.SendCustomResponse) return args.CustomResponse;
-            else return this.Html;
+            else return ContentData.FromHTML(this.Html);
         }
     }
 
@@ -138,6 +141,6 @@ namespace Html.Presentation
 
         public bool SendCustomResponse { get; set; }
 
-        public string CustomResponse { get; set; }
+        public ContentData CustomResponse { get; set; }
     }
 }

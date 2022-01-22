@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -13,6 +14,13 @@ namespace Html.Presentation
     public class Application
     {
         List<Page> pages=new List<Page>();
+
+        public Application()
+        {
+            this.Name = "myapp";
+            this.UrlHost = "http://localhost:8080";
+            this.UrlPrefix = "/myapp/";
+        }
 
         public string Name { get; set; }
         public string UrlHost { get; set; } // http://localhost:8080
@@ -76,11 +84,11 @@ function dotnet_execute(method) {
                     continue;
                 }
 
-                string responceString = null;
+                ContentData responceData = null;
 
                 if (url.StartsWith(UrlPrefix + "dotnet-common.js"))
                 {
-                    responceString = GetCommonJs();
+                    responceData = ContentData.FromJS(GetCommonJs());
                 }
                 else
                 {
@@ -88,13 +96,13 @@ function dotnet_execute(method) {
                     {
                         if (url.StartsWith(UrlPrefix + page.Name))
                         {
-                            responceString = page.ProcessRequest(request);
+                            responceData = page.ProcessRequest(request);
                             break;
                         }
                     }
                 }
 
-                if (responceString == null)
+                if (responceData == null)
                 {
                     //вернуть ошибку при неверном URL
                     response.StatusCode = 404;
@@ -102,15 +110,21 @@ function dotnet_execute(method) {
                     response.Close();
                     continue;
                 }
-                
-                byte[] buffer = Encoding.UTF8.GetBytes(responceString);
+
+                byte[] buffer = responceData.Content;
 
                 // Get a response stream and write the response to it.
                 response.Headers.Add("Expires: Tue, 01 Jul 2000 06:00:00 GMT");
                 response.Headers.Add("Cache-Control: max-age=0, no-cache, must-revalidate");
                 response.ContentLength64 = buffer.Length;
-                System.IO.Stream output = response.OutputStream;
-                System.IO.BinaryWriter wr = new System.IO.BinaryWriter(output);
+
+                if (!string.IsNullOrEmpty(responceData.ContentType))
+                {
+                    response.ContentType = responceData.ContentType;
+                }
+
+                Stream output = response.OutputStream;
+                BinaryWriter wr = new BinaryWriter(output);
 
                 using (wr)
                 {
@@ -124,12 +138,20 @@ function dotnet_execute(method) {
             Thread th = new Thread(Run);
             th.IsBackground = true;
             th.Start();
-            Console.WriteLine("Listening on " + HomepageUrl);
 
-            ProcessStartInfo psi = new ProcessStartInfo();
-            psi.FileName = HomepageUrl;
-            psi.UseShellExecute = true;
-            Process.Start(psi);
+            if (!string.IsNullOrEmpty(this.HomepageUrl))
+            {
+                Console.WriteLine("Listening on " + HomepageUrl);
+
+                ProcessStartInfo psi = new ProcessStartInfo();
+                psi.FileName = HomepageUrl;
+                psi.UseShellExecute = true;
+                Process.Start(psi);
+            }
+            else
+            {
+                Console.WriteLine("Listening on " + this.UrlHost + this.UrlPrefix);
+            }
         }
     }
 }
