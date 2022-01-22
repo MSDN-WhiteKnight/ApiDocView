@@ -20,12 +20,14 @@ namespace Html.Presentation
             this.Name = "myapp";
             this.UrlHost = "http://localhost:8080";
             this.UrlPrefix = "/myapp/";
+            this.ShowIntroMessage = true;
         }
 
         public string Name { get; set; }
         public string UrlHost { get; set; } // http://localhost:8080
         public string UrlPrefix { get; set; } // /myapp/
         public string HomepageUrl { get; set; }
+        public bool ShowIntroMessage { get; set; }
 
         public void AddPage(Page page)
         {
@@ -141,16 +143,33 @@ function dotnet_execute(method) {
 
             if (!string.IsNullOrEmpty(this.HomepageUrl))
             {
-                Console.WriteLine("Listening on " + HomepageUrl);
+                if (this.ShowIntroMessage)
+                {
+                    Console.WriteLine("Welcome to " + this.Name + " application!");
+                    Console.WriteLine("Displaying web UI on " + HomepageUrl);
+                    Console.WriteLine("(If browser does not start automatically, navigate to URL manually.)");
+                }
 
-                ProcessStartInfo psi = new ProcessStartInfo();
-                psi.FileName = HomepageUrl;
-                psi.UseShellExecute = true;
-                Process.Start(psi);
+                try
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo();
+                    psi.FileName = HomepageUrl;
+                    psi.UseShellExecute = true;
+                    Process.Start(psi);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed to start browser");
+                    Console.WriteLine(ex.ToString());
+                }
             }
             else
             {
-                Console.WriteLine("Listening on " + this.UrlHost + this.UrlPrefix);
+                if (this.ShowIntroMessage)
+                {
+                    Console.WriteLine("Welcome to " + this.Name + " application!");
+                    Console.WriteLine("Displaying web UI on " + this.UrlHost + this.UrlPrefix);
+                }
             }
         }
     }
