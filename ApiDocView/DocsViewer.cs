@@ -6,14 +6,35 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using Markdig;
+using Markdig.Syntax;
+using Microsoft.DocAsCode.Common;
+using Microsoft.DocAsCode.MarkdigEngine.Extensions;
 
 namespace ApiDocView
 {
     static class DocsViewer
     {
+        public static string GetLinkCallback(string path, MarkdownObject origin)
+        {
+            return "";
+        }
+
+        public static (string,object) ReadFileCallback(string path, MarkdownObject origin)
+        {
+            RelativePath rp = RelativePath.Parse("test.cs");
+            return ("Sample content", rp);
+        }
+
         public static string RenderDocument(string srctext)
         {
-            return Markdown.ToHtml(srctext);
+            MarkdownContext ctx = new MarkdownContext(
+                /*getLink: GetLinkCallback,
+                readFile: ReadFileCallback*/
+                );
+
+            MarkdownPipelineBuilder mpb = new MarkdownPipelineBuilder();
+            MarkdownPipeline mp = mpb.UseDocfxExtensions(ctx).Build();
+            return Markdown.ToHtml(srctext, mp);
         }
 
         static string GetRemarksText(XmlNode docs)
