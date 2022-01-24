@@ -3,6 +3,7 @@
  * License: MIT */
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Xml;
 using Markdig;
@@ -14,22 +15,61 @@ namespace ApiDocView
 {
     static class DocsViewer
     {
+        static DocsViewer()
+        {
+            SrcDirectory = Directory.GetCurrentDirectory();
+        }
+
+        public static string SrcDirectory { get; set; }
+
         public static string GetLinkCallback(string path, MarkdownObject origin)
         {
             return "";
         }
 
-        public static (string,object) ReadFileCallback(string path, MarkdownObject origin)
+        public static (string, object) ReadFileCallback(string path, MarkdownObject origin)
         {
-            RelativePath rp = RelativePath.Parse("test.cs");
-            return ("Sample content", rp);
+            string path_content;
+            RelativePath rp;
+            string content;
+
+            if (path.StartsWith("~/"))
+            {
+                string rel = path.Substring(2, path.Length - 2);
+                path_content = Path.Combine(GetRepositoryRoot(SrcDirectory), rel);
+                rp = RelativePath.Parse(Path.GetFileName(path));
+            }
+            else
+            {
+                if (Path.IsPathFullyQualified(path)) path_content = path;
+                else path_content = Path.Combine(SrcDirectory, path);
+
+                rp = RelativePath.Parse(path);
+            }
+
+            if (File.Exists(path_content)) content = File.ReadAllText(path_content);
+            else content = "[File not found: " + path + "]";
+
+            return (content, rp);
+        }
+
+        static string GetRepositoryRoot(string dir)
+        {
+            string docfx_path = Path.Combine(dir, "docfx.json");
+
+            if (File.Exists(docfx_path)) return dir;
+
+            DirectoryInfo parent = Directory.GetParent(dir);
+
+            if (parent == null) return dir;
+            else return GetRepositoryRoot(parent.FullName);
         }
 
         public static string RenderDocument(string srctext)
         {
             MarkdownContext ctx = new MarkdownContext(
-                /*getLink: GetLinkCallback,
-                readFile: ReadFileCallback*/
+                //getLink: GetLinkCallback,
+                readFile: ReadFileCallback
                 );
 
             MarkdownPipelineBuilder mpb = new MarkdownPipelineBuilder();
