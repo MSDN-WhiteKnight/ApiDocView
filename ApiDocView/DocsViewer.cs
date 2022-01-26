@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Xml;
+using Html.Presentation;
 using Markdig;
 using Markdig.Syntax;
 using Microsoft.DocAsCode.Common;
@@ -98,6 +100,36 @@ namespace ApiDocView
             string remarks = nodeCdata.Value;
             if (remarks == null) remarks = string.Empty;
             return remarks;
+        }
+
+        public static string RenderFileList()
+        {
+            StringBuilder sb = new StringBuilder();
+            HtmlBuilder hb = new HtmlBuilder(sb);
+
+            string[] files = Directory.GetFiles(SrcDirectory);
+
+            hb.StartParagraph();
+            hb.WriteEscaped("[" + SrcDirectory+ "]");
+            hb.EndParagraph();
+
+            for (int i = 0; i < files.Length; i++)
+            {
+                hb.StartParagraph();
+                string ext = Path.GetExtension(files[i]);
+                string name = Path.GetFileName(files[i]);
+                
+                if (Utils.IsDocsFileExtension(ext))
+                {
+                    string url = "index.html?filename=" + WebUtility.UrlEncode(name);
+                    hb.WriteHyperlink(url, name);
+                }
+                else hb.WriteEscaped(name);
+
+                hb.EndParagraph();
+            }
+
+            return sb.ToString();
         }
 
         public static string GetFromXML(string xml)

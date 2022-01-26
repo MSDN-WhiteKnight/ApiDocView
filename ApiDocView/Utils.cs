@@ -13,5 +13,11 @@ namespace ApiDocView
         {
             return string.Equals(left, right, StringComparison.Ordinal);
         }
+
+        public static bool IsDocsFileExtension(string ext)
+        {
+            return StrEquals(ext, ".txt") || StrEquals(ext, ".md") || StrEquals(ext, ".xml") ||
+                StrEquals(ext, ".html");
+        }
     }
 }
